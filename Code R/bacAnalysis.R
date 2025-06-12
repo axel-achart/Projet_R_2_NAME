@@ -76,33 +76,27 @@ server <- function(input, output, session) {
     data <- data_filtered()
     if (nrow(data) == 0) return(NULL)
     
-    # Simulation d'un "score" : poids fictif par niveau de mention
-    data_long <- data %>%
-      mutate(
-        Mention = case_when(
-          Number_Admitted_With_Highest_Honors_With_Jury_Congratulations > 0 ~ "Très Bien + Félicitations",
-          Number_Admitted_With_Highest_Honors_Without_Jury_Congratulations > 0 ~ "Très Bien",
-          Number_Admitted_With_High_Honors > 0 ~ "Bien",
-          Number_Admitted_With_Honors > 0 ~ "Assez Bien",
-          Number_Admitted_Without_Honors > 0 ~ "Passable",
-          TRUE ~ "Non admis"
-        ),
-        score = case_when(
-          Mention == "Très Bien + Félicitations" ~ 18,
-          Mention == "Très Bien" ~ 16,
-          Mention == "Bien" ~ 14,
-          Mention == "Assez Bien" ~ 12,
-          Mention == "Passable" ~ 10,
-          TRUE ~ 8
-        )
+    # Construction du tableau avec les mentions + scores
+    mentions <- data.frame(
+      Mention = c("Très Bien + Félicitations", "Très Bien", "Bien", "Assez Bien", "Passable"),
+      Score = c(18, 16, 14, 12, 10),
+      Nombre = c(
+        sum(data$Number_Admitted_With_Highest_Honors_With_Jury_Congratulations),
+        sum(data$Number_Admitted_With_Highest_Honors_Without_Jury_Congratulations),
+        sum(data$Number_Admitted_With_High_Honors),
+        sum(data$Number_Admitted_With_Honors),
+        sum(data$Number_Admitted_Without_Honors)
       )
+    )
     
-    ggplot(data_long, aes(x = score, fill = Mention)) +
-      geom_histogram(binwidth = 1, position = "identity", alpha = 0.7) +
+    ggplot(mentions, aes(x = Score, y = Nombre, fill = Mention)) +
+      geom_col(width = 0.9, alpha = 0.8) +
       labs(title = "Répartition simulée des mentions", x = "Score estimé", y = "Nombre de candidats") +
       theme_minimal()
   })
+  
 }
 
 # Lancement
 shinyApp(ui = ui, server = server)
+
