@@ -3,7 +3,7 @@ library(dplyr)
 library(ggplot2)
 
 # Lecture des données
-df_working <- read.csv("../data/raw/baccalaureate_by_academy_france.csv")
+df_working <- read.csv("../data/raw/baccalaureate_by_academy_france.csv",sep = ";", stringsAsFactors = FALSE)
 print(names(df_working))  # Afficher les noms des colonnes pour vérification
 # Interface utilisateur
 ui <- fluidPage(
