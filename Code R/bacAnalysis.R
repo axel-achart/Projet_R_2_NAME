@@ -1,11 +1,4 @@
-# Code R for French Bac Analysis
 
-# --> Set Working Directory
-read.csv("baccalaureate_by_academy_france.csv")
-data <- read.csv("baccalaureate_by_academy_france.csv") # Set variable  of dataset
-
-# Vérifier si valeurs manquantes
-sum(is.na(baccalaureate_by_academy_france))
 
 # UI by Shiny
 library(shiny)
@@ -13,18 +6,18 @@ library(dplyr)
 library(ggplot2)
 
 # Lecture des données
-df_working <- read.csv("baccalaureate_by_academy_france.csv")
-
+df_working <- read.csv("../data/raw/baccalaureate_by_academy_france.csv",header = TRUE,sep = ";")
+print(names(df_working))
 # Interface utilisateur
 ui <- fluidPage(
   titlePanel("Dashboard Bac par Académie (France)"),
   
   sidebarLayout(
     sidebarPanel(
-      selectInput("year", "Année :", choices = unique(df_working$Session)),
-      selectInput("academy", "Académie :", choices = unique(df_working$Academy)),
-      selectInput("specialty", "Spécialité :", choices = unique(df_working$Diploma_Specialty))
-    ),
+      selectInput("year", "Année :", choices = c("Toutes", unique(df_working$Session)), multiple = TRUE),
+      selectInput("academy", "Académie :", choices = c("Toutes", unique(df_working$Academy)), multiple = TRUE),
+      selectInput("specialty", "Spécialité :", choices = c("Toutes", unique(df_working$Diploma_Specialty)), multiple = TRUE)
+      ),
     
     mainPanel(
       h3("Pourcentage de Réussite"),
@@ -38,18 +31,38 @@ ui <- fluidPage(
     )
   )
 )
-
+print(names(df_working))
 # Serveur
 server <- function(input, output, session) {
   
   data_filtered <- reactive({
-    df_working %>%
-      filter(
-        Session == input$year,
-        Academy == input$academy,
-        Diploma_Specialty == input$specialty
-      )
+    data <- df_working
+    # Filtre année
+    if (!("Toutes" %in% input$year)) {
+      data <- data[data$Session %in% input$year, ]
+    }
+    # Filtre académie
+    if (!("Toutes" %in% input$academy)) {
+      data <- data[data$Academy %in% input$academy, ]
+    }
+    # Filtre spécialité
+    if (!("Toutes" %in% input$specialty)) {
+      data <- data[data$Diploma_Specialty %in% input$specialty, ]
+    }
+    data
   })
+  observe({
+    if ("Toutes" %in% input$year) {
+      updateSelectInput(session, "year", selected = unique(df_working$Session))
+    }
+    if ("Toutes" %in% input$academy) {
+      updateSelectInput(session, "academy", selected = unique(df_working$Academy))
+    }
+    if ("Toutes" %in% input$specialty) {
+      updateSelectInput(session, "specialty", selected = unique(df_working$Diploma_Specialty))
+    }
+  })
+  
   
   output$pourcentage_reussite <- renderText({
     data <- data_filtered()
@@ -78,14 +91,15 @@ server <- function(input, output, session) {
     
     # Construction du tableau avec les mentions + scores
     mentions <- data.frame(
-      Mention = c("Très Bien + Félicitations", "Très Bien", "Bien", "Assez Bien", "Passable"),
-      Score = c(18, 16, 14, 12, 10),
+      Mention = c("Très Bien + Félicitations", "Très Bien", "Bien", "Assez Bien", "Passable","Refusé"),
+      Score = c(18, 16, 14, 12, 10, 8),
       Nombre = c(
         sum(data$Number_Admitted_With_Highest_Honors_With_Jury_Congratulations),
         sum(data$Number_Admitted_With_Highest_Honors_Without_Jury_Congratulations),
         sum(data$Number_Admitted_With_High_Honors),
         sum(data$Number_Admitted_With_Honors),
-        sum(data$Number_Admitted_Without_Honors)
+        sum(data$Number_Admitted_Without_Honors),
+        sum(data$Total_Number_Rejected)
       )
     )
     
