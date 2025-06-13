@@ -7,8 +7,10 @@ df_working <- read.csv("../data/raw/baccalaureate_by_academy_france.csv",sep = "
 print(names(df_working))  # Afficher les noms des colonnes pour vérification
 # Interface utilisateur
 ui <- fluidPage(
-  titlePanel("Dashboard Bac par Académie (France)"),
-  
+  tags$div(
+    tags$h1("Dashboard Bac par Académie (France)", style = "text-align: center;")
+  ),
+
   sidebarLayout(
     sidebarPanel(
       selectInput("year", "Année :", choices = c("Toutes", unique(df_working$Session)), multiple = TRUE),
@@ -19,10 +21,14 @@ ui <- fluidPage(
     mainPanel(
       h3("Pourcentage de Réussite"),
       textOutput("pourcentage_reussite"),
+
+      hr(),
       
       h3("Répartition des Filières"),
       plotOutput("camembert_filiere"),
       
+      hr(),
+
       h3("Répartition des Mentions (Score simulé)"),
       plotOutput("courbe_mentions")
     )
@@ -81,7 +87,7 @@ server <- function(input, output, session) {
       theme_void() +
       labs(title = "Répartition des Filières (Path)")
   })
-    
+
   output$courbe_mentions <- renderPlot({
     data <- data_filtered()
     if (nrow(data) == 0) return(NULL)
@@ -105,13 +111,20 @@ server <- function(input, output, session) {
 
     # Affichage en histogramme empilé
     ggplot(mentions_stacked, aes(x = Mention, y = Nombre, fill = Path)) +
-      geom_col(position = "stack") +
-      labs(title = "Répartition des Mentions par Type de Bac", x = "Mention", y = "Nombre de candidats") +
-      theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    geom_col(position = "stack", color = "white", width = 0.9) +
+    scale_fill_brewer(palette = "Set2") +
+    labs(title = "Répartition des Mentions par Type de Bac", x = "Mention", y = "Nombre de candidats", fill = "Filière") +
+    theme_minimal(base_family = "Arial", base_size = 13) +
+    theme(
+      plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+      axis.title.x = element_text(face = "bold", size = 13),
+      axis.title.y = element_text(face = "bold", size = 13),
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 11),
+      axis.text.y = element_text(size = 11),
+      legend.title = element_text(face = "bold", size = 12),
+      legend.text = element_text(size = 11)
+    )
   })
-
-  
 }
 
 # Lancement
