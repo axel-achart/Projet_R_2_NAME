@@ -67,26 +67,37 @@ server <- function(input, output, session) {
   })
   
   
-  output$pourcentage_reussite <- renderText({
-    data <- data_filtered()
-    if (nrow(data) == 0) return("Pas de données")
-    pourcentage <- sum(data$Total_Number_Admitted) / sum(data$Number_of_Attendees) * 100
-    paste0(round(pourcentage, 2), "% de réussite")
-  })
+  # In your server function, inside renderPlot for camembert_filiere:
+output$camembert_filiere <- renderPlot({
+  data <- data_filtered()
+  if (nrow(data) == 0) return(NULL)
   
-  output$camembert_filiere <- renderPlot({
-    data <- data_filtered()
-    if (nrow(data) == 0) return(NULL)
-    df_working_pie <- data %>%
-      group_by(Path) %>%
-      summarise(nb = sum(Number_of_Attendees))
-    
-    ggplot(df_working_pie, aes(x = "", y = nb, fill = Path)) +
-      geom_bar(stat = "identity", width = 1) +
-      coord_polar("y") +
-      theme_void() +
-      labs(title = "Répartition des Filières (Path)")
-  })
+  # Group by Path and calculate admitted and attendees
+  df_success <- data %>%
+    group_by(Path) %>%
+    summarise(
+      Admitted = sum(Total_Number_Admitted, na.rm = TRUE),
+      Attendees = sum(Number_of_Attendees, na.rm = TRUE)
+    ) %>%
+    mutate(
+      SuccessRate = ifelse(Attendees > 0, Admitted / Attendees * 100, 0)
+    )
+  
+  # For pie chart, you need the proportion of each Path's success rate
+  df_success <- df_success %>%
+    mutate(
+      label = paste0(Path, "\n", round(SuccessRate, 1), "%")
+    )
+  
+  # Plot as a pie chart (camembert)
+  ggplot(df_success, aes(x = "", y = SuccessRate, fill = Path)) +
+    geom_bar(stat = "identity", width = 1) +
+    coord_polar("y") +
+    theme_void() +
+    geom_text(aes(label = label), 
+              position = position_stack(vjust = 0.5), size = 3) +
+    labs(title = "Taux de réussite par filière (Path)")
+})
 
   output$courbe_mentions <- renderPlot({
     data <- data_filtered()
