@@ -7,7 +7,9 @@ df_working <- read.csv("../data/raw/baccalaureate_by_academy_france.csv",sep = "
 print(names(df_working))  # Afficher les noms des colonnes pour vérification
 # Interface utilisateur
 ui <- fluidPage(
-  titlePanel("Dashboard Bac par Académie (France)"),
+  tags$div(
+    tags$h1("Dashboard Bac par Académie (France)", style = "text-align: center;")
+  ),
   
   sidebarLayout(
     sidebarPanel(
