@@ -81,30 +81,36 @@ server <- function(input, output, session) {
       theme_void() +
       labs(title = "Répartition des Filières (Path)")
   })
-  
+    
   output$courbe_mentions <- renderPlot({
     data <- data_filtered()
     if (nrow(data) == 0) return(NULL)
-    
-    # Construction du tableau avec les mentions + scores
-    mentions <- data.frame(
-      Mention = c("Très Bien + Félicitations", "Très Bien", "Bien", "Assez Bien", "Passable","Refusé"),
-      Score = c(18, 16, 14, 12, 10, 8),
-      Nombre = c(
-        sum(data$Number_Admitted_With_Highest_Honors_With_Jury_Congratulations),
-        sum(data$Number_Admitted_With_Highest_Honors_Without_Jury_Congratulations),
-        sum(data$Number_Admitted_With_High_Honors),
-        sum(data$Number_Admitted_With_Honors),
-        sum(data$Number_Admitted_Without_Honors),
-        sum(data$Total_Number_Rejected)
+
+    # Construction du tableau empilé
+    mentions_stacked <- data %>%
+      group_by(Path) %>%
+      summarise(
+        `Très Bien + Félicitations` = sum(Number_Admitted_With_Highest_Honors_With_Jury_Congratulations),
+        `Très Bien` = sum(Number_Admitted_With_Highest_Honors_Without_Jury_Congratulations),
+        Bien = sum(Number_Admitted_With_High_Honors),
+        `Assez Bien` = sum(Number_Admitted_With_Honors),
+        Passable = sum(Number_Admitted_Without_Honors),
+        Refusé = sum(Total_Number_Rejected)
+      ) %>%
+      tidyr::pivot_longer(
+        cols = -Path,
+        names_to = "Mention",
+        values_to = "Nombre"
       )
-    )
-    
-    ggplot(mentions, aes(x = Score, y = Nombre, fill = Mention)) +
-      geom_col(width = 0.9, alpha = 0.8) +
-      labs(title = "Répartition simulée des mentions", x = "Score estimé", y = "Nombre de candidats") +
-      theme_minimal()
+
+    # Affichage en histogramme empilé
+    ggplot(mentions_stacked, aes(x = Mention, y = Nombre, fill = Path)) +
+      geom_col(position = "stack") +
+      labs(title = "Répartition des Mentions par Type de Bac", x = "Mention", y = "Nombre de candidats") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
   })
+
   
 }
 
