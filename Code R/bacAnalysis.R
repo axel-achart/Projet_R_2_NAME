@@ -1,13 +1,10 @@
-
-
-# UI by Shiny
 library(shiny)
 library(dplyr)
 library(ggplot2)
 
 # Lecture des données
-df_working <- read.csv("../data/raw/baccalaureate_by_academy_france.csv",header = TRUE,sep = ";")
-print(names(df_working))
+df_working <- read.csv("../data/raw/baccalaureate_by_academy_france.csv")
+print(names(df_working))  # Afficher les noms des colonnes pour vérification
 # Interface utilisateur
 ui <- fluidPage(
   titlePanel("Dashboard Bac par Académie (France)"),
