@@ -1,20 +1,10 @@
-# Code R for French Bac Analysis
-
-# --> Set Working Directory
-read.csv("baccalaureate_by_academy_france.csv")
-data <- read.csv("baccalaureate_by_academy_france.csv") # Set variable  of dataset
-
-# Vérifier si valeurs manquantes
-sum(is.na(baccalaureate_by_academy_france))
-
-# UI by Shiny
 library(shiny)
 library(dplyr)
 library(ggplot2)
 
 # Lecture des données
-df_working <- read.csv("baccalaureate_by_academy_france.csv")
-
+df_working <- read.csv("../data/raw/baccalaureate_by_academy_france.csv")
+print(names(df_working))  # Afficher les noms des colonnes pour vérification
 # Interface utilisateur
 ui <- fluidPage(
   titlePanel("Dashboard Bac par Académie (France)"),
