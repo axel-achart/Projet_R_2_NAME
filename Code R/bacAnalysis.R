@@ -118,22 +118,59 @@ server <- function(input, output, session) {
       )
     
     ggplot(mentions_stacked, aes(x = Mention, y = Nombre, fill = Path)) +
-    geom_col(position = "stack", color = "white", width = 0.9) +
-    scale_fill_brewer(palette = "Set2") +
-    labs(title = "Répartition des Mentions par Type de Bac", x = "Mention", y = "Nombre de candidats", fill = "Filière") +
-    theme_minimal(base_family = "Arial", base_size = 13) +
-    theme(
-      plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
-      axis.title.x = element_text(face = "bold", size = 13),
-      axis.title.y = element_text(face = "bold", size = 13),
-      axis.text.x = element_text(angle = 45, hjust = 1, size = 11),
-      axis.text.y = element_text(size = 11),
-      legend.title = element_text(face = "bold", size = 12),
-      legend.text = element_text(size = 11)
-    )
+      geom_col(position = "stack", color = "white", width = 0.9) +
+      geom_text(
+        aes(label = ifelse(Nombre >= 5, Nombre, "")),
+        position = position_stack(vjust = 0.5),
+        size = 3.5,
+        color = "black"
+      ) +
+      scale_fill_brewer(palette = "Set2") +
+      labs(title = "Répartition des Mentions par Type de Bac", x = "Mention", y = "Nombre de candidats", fill = "Filière") +
+      theme_minimal(base_family = "Arial", base_size = 13) +
+      theme(
+        plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+        axis.title.x = element_text(face = "bold", size = 13),
+        axis.title.y = element_text(face = "bold", size = 13),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 11),
+        axis.text.y = element_text(size = 11),
+        legend.title = element_text(face = "bold", size = 12),
+        legend.text = element_text(size = 11)
+      )
   })
+  
+  
+  
+output$comparaison_academies <- renderPlot({
+  data <- data_filtered()
+  if (nrow(data) == 0) return(NULL)
+  
+  df_compare <- data %>%
+    group_by(Academy) %>%
+    summarise(
+      Nombre_Presents = sum(Number_of_Attendees, na.rm = TRUE),
+      Nombre_Admis = sum(Total_Number_Admitted, na.rm = TRUE)
+    ) %>%
+    mutate(Taux_Reussite = 100 * Nombre_Admis / Nombre_Presents)
+  
+  ggplot(df_compare, aes(x = reorder(Academy, Taux_Reussite), y = Taux_Reussite, fill = Academy)) +
+    geom_col(show.legend = FALSE) +
+    geom_text(aes(label = paste0(round(Taux_Reussite, 1), "%")), hjust = -0.1, size = 4) + 
+    coord_flip() +
+    labs(
+      title = "Comparaison des taux de réussite par académie",
+      x = "Académie",
+      y = "Taux de réussite (%)"
+    ) +
+    theme_minimal() +
+    theme(
+      axis.text = element_text(size = 11),
+      axis.title = element_text(size = 13, face = "bold"),
+      plot.title = element_text(size = 15, face = "bold", hjust = 0.5)
+    ) +
+    ylim(0, max(df_compare$Taux_Reussite) + 10)  
+})
 }
 
 # Lancement de l'application
 shinyApp(ui = ui, server = server)
-
