@@ -9,6 +9,8 @@
 This project analyzes and visualizes the French Baccalaureate (bac) dataset using **R** and **Shiny**.  
 The goal is to provide clear, interactive insights into success rates and student distributions across different **filieres** (Paths), **academies**, and **years**.
 
+https://www.kaggle.com/datasets/yanisstentzel/french-baccalaureate-2021-2024
+
 ---
 
 ## Why R?
