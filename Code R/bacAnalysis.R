@@ -27,7 +27,7 @@ ui <- fluidPage(
       plotOutput("camembert_filiere"),
       
       hr(),
-      h3("Répartition des Mentions (Score simulé)"),
+      h3("Répartition des Mentions"),
       plotOutput("courbe_mentions", height = "500px"),
       
       hr(),
@@ -94,7 +94,7 @@ server <- function(input, output, session) {
       theme_void() +
       geom_text(aes(label = label), 
                 position = position_stack(vjust = 0.5), size = 3) +
-      labs(title = "Taux de réussite par filière (Path)")
+      labs(title = "Taux de réussite par filière")
   })
   
   output$courbe_mentions <- renderPlot({
@@ -104,12 +104,12 @@ server <- function(input, output, session) {
     mentions_stacked <- data %>%
       group_by(Path) %>%
       summarise(
-        `Très Bien + Félicitations` = sum(Number_Admitted_With_Highest_Honors_With_Jury_Congratulations, na.rm = TRUE),
-        `Très Bien` = sum(Number_Admitted_With_Highest_Honors_Without_Jury_Congratulations, na.rm = TRUE),
-        Bien = sum(Number_Admitted_With_High_Honors, na.rm = TRUE),
-        `Assez Bien` = sum(Number_Admitted_With_Honors, na.rm = TRUE),
-        Passable = sum(Number_Admitted_Without_Honors, na.rm = TRUE),
-        Refusé = sum(Total_Number_Rejected, na.rm = TRUE)
+        '6 Très Bien + Félicitations' = sum(Number_Admitted_With_Highest_Honors_With_Jury_Congratulations, na.rm = TRUE),
+        '5 Très Bien' = sum(Number_Admitted_With_Highest_Honors_Without_Jury_Congratulations, na.rm = TRUE),
+        '4 Bien' = sum(Number_Admitted_With_High_Honors, na.rm = TRUE),
+        '3 Assez Bien' = sum(Number_Admitted_With_Honors, na.rm = TRUE),
+        '2 Passable' = sum(Number_Admitted_Without_Honors, na.rm = TRUE),
+        '1 Refusé' = sum(Total_Number_Rejected, na.rm = TRUE)
       ) %>%
       tidyr::pivot_longer(
         cols = -Path,
