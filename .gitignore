@@ -1,0 +1,7 @@
+# Fichiers R et RStudio à ignorer
+.RData
+.Rhistory
+.Ruserdata
+.Rproj.user/
+.Rproj.user/*
+.Rapp.history
